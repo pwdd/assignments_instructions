@@ -3,6 +3,7 @@
 The overall goal of this assignment is to assess your ability to implement and customize Rails scaffold.
 
 This includes:
+
 1. Creating a Rails scaffold for a Model, View, and Controller (MVC)
 2. Modifying the runtime application flow
 3. Re-using and customizing partial views
