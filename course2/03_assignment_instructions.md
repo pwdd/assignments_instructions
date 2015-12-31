@@ -33,45 +33,45 @@ Try following the **Getting Started** and **Technical Requirements** step by ste
 1. Create a new Rails application called **todolists**
 
 2. Add the following specification to your `Gemfile`
-```
-group :test do
-  gem 'rspec-rails', '~> 3.0'
-  gem 'capybara'
-end
-```
+    ```
+    group :test do
+      gem 'rspec-rails', '~> 3.0'
+      gem 'capybara'
+    end
+    ```
+
 3.  From the **todolists** application **root** directory, run the `bundle` command to resolve new gems
 
 4. Initialize the **rspec** tests using the `rails generate rspec:install` command
 
-```
-[todolists]$ rails generate rspec:install
-    create .rspec
-    create spec
-    create spec/spec_helper.rb
-    create spec/rails_helper.rb
-```
+    ```
+    [todolists]$ rails generate rspec:install
+        create .rspec
+        create spec
+        create spec/spec_helper.rb
+        create spec/rails_helper.rb
+    ```
 
-Add the following line to `.rspec` to add verbose output to test results.
-
-`--format documentation`
-
+    Add the following line to `.rspec` to add verbose output to test results.
+    ```
+    --format documentation
+    ```
 
 5. Download and extract the starter set of bootstrap files, that will have the following structure.
-```
-|-- Gemfile
-|-- db
-|   |-- seed.rb
-|-- spec
-|    |-- features
-|    |-- module3_action_pack_spec.rb
-```
-- overwrite your existing `Gemfile` with the `Gemfile` from the bootstrap fileset. They should be nearly identical, but this is done to make sure the gems and versions you use in your solution can be processed by the automated Grader when you submit. Any submission should be tested with this version of the file.
+    ```
+    |-- Gemfile
+    |-- db
+    |   |-- seed.rb
+    |-- spec
+    |    |-- features
+    |    |-- module3_action_pack_spec.rb
+    ```
 
-- overwrite your existing `db/seed.rb` file using the `seeds.rb` provided with the bootstrap fileset. The bootstrap `seeds.rb` file contains some test data that will be useful during development and unit tests.
-
-- add the `spec/features/module3_action_pack_spec.rb` file provided with the bootstrap fileset to your **todolists** application. 
-Within your application **root** directory, you will first need to create a corresponding `spec/features` sub-directory to place the `module3_action_pack_spec.rb` file. This file contains tests that
-will help determine whether you have completed the assignment.
+    - overwrite your existing `Gemfile` with the `Gemfile` from the bootstrap fileset. They should be nearly identical, but this is done to make sure the gems and versions you use in your solution can be processed by the automated Grader when you submit. Any submission should be tested with this version of the file.
+    - overwrite your existing `db/seed.rb` file using the `seeds.rb` provided with the bootstrap fileset. The bootstrap `seeds.rb` file contains some test data that will be useful during development and unit tests.
+    - add the `spec/features/module3_action_pack_spec.rb` file provided with the bootstrap fileset to your **todolists** application. 
+    
+    Within your application **root** directory, you will first need to create a corresponding `spec/features` sub-directory to place the `module3_action_pack_spec.rb` file. This file contains tests that will help determine whether you have completed the assignment.
 
 6. Run the `rspec` test(s) to receive feedback. `rspec` must be run from the **root** directory of your application. All tests will (obviously) fail until you complete the specified solution.
 
