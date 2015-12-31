@@ -9,7 +9,7 @@ This includes:
 4. Storing state across requests
 5. Implementing an end-to-end display of a custom query
 
-The functional goal of this assignment is to implement a web application to manage **TodoItems**.
+The functional goal of this assignment is to implement a web application to manage **Todo Items**.
 
 Try following the **Getting Started** and **Technical Requirements** step by step. Solving one problem at a time is a good way to approach the assignments.
 
@@ -18,15 +18,15 @@ Try following the **Getting Started** and **Technical Requirements** step by ste
 1. Create the scaffold for the following model type:
     - TodoItem
 
-2. Create the Database (DB) schema for **TodoItem**
+2. Create the Database (DB) schema for `TodoItem`
 
-3. Change the default scaffolding to route to the **index** after a TodoItem is created, instead of the default behavior that leads to the **show** page.
+3. Change the default scaffolding to route to the **index** after a Todo Item is created, instead of the default behavior that leads to the **show** page.
 
 4. Remove the **Edit** link from the **index** view.
 
-5. Modify the **TodoItem** partial view to display the **Completed** property when a **TodoItem** is being *edited*, and not when it is being *created*.
+5. Modify the Todo Item partial view to display the `completed` property when a Todo Item is being *edited*, and not when it is being *created*.
 
-6. Display the number of completed **TodoItems**.
+6. Display the number of completed Todo Items.
 
 ## Getting Started
 
