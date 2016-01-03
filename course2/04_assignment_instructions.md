@@ -9,7 +9,8 @@ The overall goal of this assignment is to assess your ability to implement:
 
 The functional goal of this assignment to implement a web application to manage Todo Items.
 
-Try following the **Getting Started** and **Technical Requirements** step by step. For this assignment, it is important that you follow the order of the tests suggested in this document. Many tests will fail if executed after additional techical requirements have been completed (refer to **Technical Requirement #5**). 
+Try following the **Getting Started** and **Technical Requirements** step by step. 
+For this assignment, it is important that you follow the order of the tests suggested in this document. Many tests will fail if executed after additional techical requirements have been completed. There will be no need to run only the command `rspec` to check for all the requirements. Instead, you will run `end2end.rb` to check if your application has implemented all the requirements correctly (refer to **Technical Requirement #5 and #XX**). 
 
 ## Functional Requirements
 
@@ -73,30 +74,29 @@ Try following the **Getting Started** and **Technical Requirements** step by ste
 
   - Overwrite your existing `Gemfile` with the `Gemfile` from the bootstrap fileset. They should be nearly identical, but this is done to make sure the gems and versions you use in your solution can be processed by the automated Grader when you submit. **Any submission should be tested with this version of the file**.
 
-  NOTE that the new `Gemfile` includes the following section:
+    **NOTE** that the new `Gemfile` includes the following section:
 
-  ```
-  group :test do
-    gem 'rspec-rails', '~> 3.0'
-    gem 'capybara'
-  end
-  ```
+    ```
+    group :test do
+      gem 'rspec-rails', '~> 3.0'
+      gem 'capybara'
+    end
+    ```
+    as well as the following items:
 
-  as well as the following items:
+    - `bcrypt` gem uncommented for use with `has_secure_password`
+    - `tzinfo-date` gem conditionally included on Windows plataforms
+    - `will_paginate` added for implementing pagination
 
-  - `bcrypt` gem uncommented for use with `has_secure_password`
-  - `tzinfo-date` gem conditionally included on Windows plataforms
-  - `will_paginate` added for implementing pagination
+    ```
+    # User ActiveModel has_secure_password
+    gem 'bcrypt', '~> 3.1.7'
 
-  ```
-  # User ActiveModel has_secure_password
-  gem 'bcrypt', '~> 3.1.7'
+    # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+    gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
-  # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-  gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-
-  gem 'will_paginate', '~> 3.0.6'
-  ```
+    gem 'will_paginate', '~> 3.0.6'
+    ```
 
   - Overwrite your existing `db/seeds.rb` file with the bootstrap fileset. This file contains some test data that will be useful during development and unit tests.
 
@@ -126,330 +126,265 @@ Try following the **Getting Started** and **Technical Requirements** step by ste
 
 ## Technical Requirements
 
-1. Starting with a copy of your module 2 solution, this solution should already have User, TodoList, and TodoItem
+1. Starting with a copy of your **module 2** solution, this solution **should already have** `User`, `TodoList`, and `TodoItem` models defined with the following properties and relationships:
+(Notice that this assignment does not use the `Profile` model, but it will not hurt to include it.)
+  - `User`
+    - `username` - a string to hold account identity
+    - `password_digest` - a string to hold password information
+    - a `1:many` relationship with `TodoList` (i.e., User `has_many` todo_lists)
+    
+    Add appropriate options to have the `User` model class delete a `TodoList` in a cascading fashion
 
-models defined with the following properties and relationships. This assignment does not use the Profile model
+  - TodoList
+    - `list_name` - a string name assigned to the list
+    - `list_due_date` - the date when Todo Items in the list are to be complete. This is a **date**. We are not concerned with the time of day.
+    - `user_id` - a `many:1` relationship with `User` (i.e., TodoList `belongs_to` User)
+    - a `1:many` relationship with `TodoItem` (i.e., TodoList `has_many` todo_items).
 
-class but it will not hurt to include it.
+    Add appropriate options to have the TodoList model class delete a TodoItem in a cascading fashion
 
-• User
+  - TodoItem
+    - `due_date` - date when the specific task is to be complete
+    - `title` - a string with short name for specific task
+    - `description` - a string with narrative text for specific task
+    - `completed` - a boolean value (*default=false*), indicating whether item is complete
+    - a `many:1` relationship with `TodoList` (i.e., TodoItem `belongs_to TodoList)
 
-Add appropriate options to have the User model class delete a TodoList in a cascading fashion
+    ```
+    $ rake db:migrate
+    $ rspec spec/start_spec.rb
+    ```
 
-• TodoList
+2. Add `has_secure_password` to the `User` model class. 
+  This will define a password property that will get processed into an encrypted `hash` stored in the `password_digest` database column. We won't use this capability immediately, but it is necessary to define it early in the assignment so that the data model works with the `db/seeds.rb` file in the next step.
 
-Add appropriate options to have the TodoList model class delete a TodoItem in a cascading fashion
+  ```
+  $ rspec spec/security_spec.rb -e rq02
+  ```
 
-• TodoItem
+3. Seed the database with the `db/seeds.rb` file.
+  This will load sample Users, Todo Lists and Todo Items. If this loads correctly, it means that your models and database are setup correctly and you are ready to start accessing the data through web pages produced by the controller and views.
 
-$ rake db:migrate
+  ```
+  $ rake db:seed
+  $ rails c
+    > User.first.todo_lists.count
+    => (N>0)
+  ```
 
-$ rspec spec/start_spec.rb
+4. Use the `rails g scaffold_controller` command to create controller and view artifacts for `TodoLists` and `TodoItems`.
 
-2. Add has_secure_password to the User model class. This will define a password property that will get processed
+  ```
+  $ rails g scaffold_controller TodoList list_name list_due_date:date
 
-into an encrypted hash stored in the password_digest database column. We won’t use this capability immediately
+  $ rails g scaffold_controller TodoItem title due_date:date description:text completed:boolean
+  ```
 
-– but it is necessary to define it early in the assignment so that the data model works with the db/seeds.rb file
+  Update `config/routes.rb` to
+  - Access `:todo_list` resources at URI `/todo_lists`
+  - Access `:todo_item` resources at URI `/todo_lists/:todo_list_id/todo_items`
+  - Make the `todo_list#index` action the `root` of the application
 
-in the next step.
+  (Hint: refer to **module 4, lesson 1, lecture:Nested Resources: Part1** for details on how this is done. One thing to also consider is that the order in which the routes are defined does matter.)
 
-$ rspec spec/security_spec.rb -e rq02
+  At this point, `TodoList` is defined as a global resource (with a root-level URI) and `TodoItem` is defined as a nested resource, always scoped below the `TodoList` it belongs to. Our application is not written to work that way, so expect some errors as we begin the modifications.
 
-3. Seed the database with the db/seeds.rb file. This will load sample Users, TodoLists, and TodoItems. If this
+  If you have not yet done so, please start a new instance of the console (you will have two instances of the console open), start the server and also take a look at your defined URI routes.
 
-loads correctly – your models and database are setup correctly and you are ready to start accessing the data
+  ```
+  #in separate console
+  $ rails s 
+  ```
 
-through web pages produced by the controller and views.
+  ```
+  #in original console
+  $ rake routes 
+  $ rspec spec/nested_resources_spec.rb -e rq04
+  ```
 
-$ rake db:seed
+5. Update the `TodoList` to display `TodoItems` as a nested resource in the `todo_list#show` page (`todo_lists/show.html.erb`).
 
-$ rails c
+  a. Copy the table from the `todo_items#index` page (`index.html.erb`) and paste the table into the `todo_lists#show` page (`todo_lists/show.html.erb`)
+  b. Change global `@todo_items` references to scoped `@todo_list.todo_items` references:
 
-> User.first.todo_lists.count
+    **from**: `<% @todo_items.each do |todo_item| %>`
 
-=> (N>0)
+    **to**: `<% @todo_list.todo_items.each do |todo_item| %>`
 
-4. Use the rails g scaffold_controller command to create controller and view artifacts for TodoLists and
+  c. Remove the **Edit** link for Todo Items
+  d. Change the `link_to` parameters from global `todo_item` references to provide fully qualified `[@todo_list, todo_item]` references as an `array`.
 
-TodoItems.
+    **from**: `<td><%= link_to 'Show', todo_item %></td>`
 
-$ rails g scaffold_controller TodoList list_name list_due_date:date
+    **to**: `<td><%= link_to 'Show', [@todo_list, todo_item] %></td>`
 
-$ rails g scaffold_controller TodoItem title due_date:date description:text completed:boolean
+    **from**: `<td><%= link_to 'Destroy', todo_item, method: :delete, data: ...`
 
-Update config/routes.rb to
+    **to**: `<td><%= link_to 'Destroy', [@todo_list, todo_item], method: :delete, data: ...`
 
-• Access :todo_list resources at URI /todo_lists
+  ```
+  $ rspec spec/nested_resources_spec.rb -e rq05b
+  ```
 
-• Access :todo_item resources at URI /todo_lists/:todo_list_id/todo_items
+  **NOTE**: This test case is for incremental testing only and WILL FAIL after authentication infrastructure is in place later in this assignment.
 
-• Make the todo_list#index action the root of the application
+  ```
+  $ rspec spec/nested_resources_spec.rb -e rq05d
+  ```
 
-(Hint: refer to module 4, lesson 1, lecture:Nested Resources: Part1 for details on how this is done)
+  **NOTE**: This test case is for incremental testing only and WILL FAIL after authentication infrastructure is in place later in this assignment.
 
-At this point, TodoList is defined as a global resource (with a root-level URI) and TodoItem is defined as a
+  e. Add a link to create a **New Todo Item**. (hint: Use the `link_to` and `new_todo_list_todo_item_path(@todo_list)` helpers to produce a `link` tag)
 
-nested resource, always scoped below the TodoList it belongs to. Our application is not written to work that
+  ```
+  $ rspec spec/nested_resources_spec.rb -e rq05e
+  ```
 
-way, so expect some errors as we begin the modifications.
+  Notice how the `new_todo_list_todo_item_path(@todo_list)` is formed from what is produced in `rake routes`.
 
-If you have not yet done so – please start the server and also take a look at your defined URI routes.
+  ```
+  $ rake routes
+  ```
 
-$ rails s #in separate console
+  ```
+  new_todo_list_todo_item GET /todo_lists/:todo_list_id/todo_items/new(.:format) todo_items#new
+  ```
 
-$ rake routes #in original console
+  - we want to invoke `todo_items#new` when we create a new Todo Item
+  - that action is mapped to using the `/todo_lists/:todo_list_id/todo_items/new(.:format)` URI and `GET` method. We are required to supply a `:todo_list_id`
+  - `new_todo_list_todo_item_path` is formed by adding `_path` to `new_todo_list_todo_item`
+  - the `:todo_list_id` is filled in by passing in a `@todo_list` when calling it
+  - `GET` is the method used on the request for `new_todo_list_todo_item_path`
 
-$ rspec spec/nested_resources_spec.rb -e rq04
+  Notice that the Todo Items now display on the `todo_list#show` page by navigating to a specific Todo List.
+  However, the Todo Item URIs are not yet implemented in the `TodoItem` controller (next step).
 
-5. Update the TodoList to display TodoItems as a nested resource in the todo_list#show page (todo_lists/show.html.erb).
+  ```
+  $ rspec spec/nested_resources_spec.rb -e rq05
+  ```
 
-a. Copy the table from the todo_items#index page (index.html.erb) and paste the table into the
+6. Modify the `TodoItem` controller to work as a nested resource by implementing the following.
+(Note that your views with `TodoItem` URI references will not work until these changes are made and the links and forms are updated to include the scoping `TodoList` for each referenced `TodoItem`. The unit tests, however, will be able to make calls into your back-end to determine all URIs are implemented properly – prior to moving on to the views.
 
-todo_lists#show page (todo_lists/show.html.erb)
+  a. Remove the old URI comments or replace them to have the following form, since all calls to a `TodoItem` will now be scoped below a `TodoList`. Use the `todo_item` output of `rake routes` to give you a head start.
 
-b. Change global @todo_items references to scoped @todo_list.todo_items references below:
+    ```
+    $ rake routes
+    ```
 
-from: <% @todo_items.each do |todo_item| %>
+    ```
+    #METHOD /todo_list/:todo_list_id/todo_items
+    #METHOD /todo_list/:todo_list_id/todo_items/:id
+    ```
 
-to: <% @todo_list.todo_items.each do |todo_item| %>
+  b. Remove the `todo_item#index` method and `views/todo_items/index` pages. This will no longer be called since all `TodoItem` displays will be scoped to a particular `TodoList`. We will get the `TodoList` and call `todo_list.todo_items` instead.
+  c. Add a private helper method called `set_todo_list` that sets the `@todo_list` instance variable from the `:todo_list_id` property passed in via `params`. (Hint: try the following in the Rails console if you need practice locating a `TodoList` by id)
 
-c. Remove the Edit link for TodoItems
+  ```
+  $ rails c
+    > list_id=TodoList.first.id
+    > @todo_list=TodoList.find(list_id)
+  ```
 
-d. Change the link_to parameters from global todo_item references to provide fully qualified [@todo_list,
+  d. Update the private helper method called `set_todo_item` to scope its find command to the `todo_items` of a specific `@todo_list` list. (Hint: try the following in the Rails console if you need practice locating a `TodoItem` by id scoped to a `TodoList`)
 
-todo_item] references as an array.
+  ```
+  $ rails c
+    > list_id=TodoList.first.id
+    > @todo_list=TodoList.find(list_id)
+    > item_id=@todo_list.todo_items.first.id
+    > @todo_item=@todo_list.todo_items.find(item_id)
+  ``` 
 
-from: <td><%= link_to 'Show', todo_item %></td>
+  e. Invoke the `set_todo_list` method before each method in the controller is executed using `before_action`
+  f. Update the `todo_item#new` action to return a new `TodoItem` instance that is initialized to reference its parent `@todo_list`, which is provided by `set_todo_list`.
+    (Hint: try the following the Rails console if you need practice creating a new instance of `TodoItem` associated with a `TodoList`. Notice the new `TodoItem` is never saved to the database during this call.
+    However, what is passed back to the form is a `TodoItem` **prototype** that has its foreign key reference set to the `TodoList` so that `TodoList` can be referenced when the `TodoItem` is finally created in a follow-on POST)
 
-to: <td><%= link_to 'Show', [@todo_list, todo_item] %></td>
+    ```
+    $ rails c
+      > @todo_list=TodoList.first
+      > @todo_item=@todo_list.todo_items.new
+    ```
 
-from: <td><%= link_to 'Destroy', todo_item, method: :delete, data: ...
+    g. Update the `todo_item#create` to create a new `TodoItem` instance based on the `todo_item_params` as before. Except now create this instance associated with the `@todo_list` provided by `set_todo_list`. 
+      (Hint: try the following in the Rails console if you need practice creating a new instance of a `TodoItem` associated with a `TodoList`. Notice that, in this case, `save()` is being called on `todo_list`, causing the new `TodoItem` to be inserted into the database.)
 
-to: <td><%= link_to 'Destroy', [@todo_list, todo_item], method: :delete, data: ...
+      ```
+      $ rails c
+      > @todo_list=TodoList.first
+      > @todo_item=@todo_list.todo_items.new(title:"my item")
+      > @todo_list.save
+      ```
 
-$ rspec spec/nested_resources_spec.rb -e rq05b
+    h. Update the `redirect` action of the `todo_item#create`, `todo_item#update`, and `todo_item#destroy` methods to `todo_list#index` page. 
+      (Hint: use the `@todo_list variable within redirect_to to express  the todo_list#index page URI)
 
-NOTE: This test case is for incremental testing only and WILL FAIL after authentication infrastructure is in
+7. Update `TodoList` and `TodoItem` views to adjust the links and forms in these views to work with the updated URIs and `TodoItem` controller.
+  
+  a. Update the links on the `todo_items#show` page (`todo_items/show.html.erb`) to include the `TodoList` that the TodoItem is a member of.
+    - Change the **Edit** `link_to` path parameter from the global `edit_todo_item_path` (that no longer exists) to the new `edit_todo_list_todo_item_path`. This new method requires both `@todo_list` and `todo_item` passed in as separate arguments (**not as an `array` – as in previous requirement**).
 
-place later in this assignment.
+      **from**: `<%= link_to 'Edit', edit_todo_item_path(@todo_item) %>`
 
-$ rspec spec/nested_resources_spec.rb -e rq05d
+      **to**: `<%= link_to 'Edit', edit_todo_list_todo_item_path(@todo_list, @todo_item) %>`
 
-NOTE: This test case is for incremental testing only and WILL FAIL after authentication infrastructure is in
+    - Change the **Back** `link_to` path parameter from to global `edit_items_path` (that no longer exists) to the `todo_listi#show` page it is a member of. This requires using the `@todo_list`.
 
-place later in this assignment.
+      **from**: `<%= link_to 'Back', todo_items_path %>`
 
-e. Add a link to create a ‘New Todo Item’. (hint: Use the link_to and new_todo_list_todo_item_path(@todo_list)
+      **to**: `<%= link_to 'Back', @todo_list %>`
 
-helpers to produce a link tag)
+    ```
+    $ rspec spec/nested_resources_spec.rb -e rq07a
+    ```
 
-$ rspec spec/nested_resources_spec.rb -e rq05e
+  b. Update the links on the `todo_items#edit` page (`todo_items/edit.html.erb`) to include the `TodoList` that the `TodoItem` is a member of.
+    - Change the **Show** `link_to` path parameter from a global `@todo_item` reference to include its `@todo_list`.
+      This requires using both `@todo_list` and `@todo_item` passed in as separate arguments as an `array`.
 
-Note how the new_todo_list_todo_item_path(@todo_list) is formed from what is produced in rake routes.
+        **from**: `<%= link_to 'Show', @todo_item %>`
 
-$ rake routes
+        **to**: `<%= link_to 'Show', [@todo_list, @todo_item] %>`
 
-new_todo_list_todo_item GET /todo_lists/:todo_list_id/todo_items/new(.:format) todo_items#new
+    - Change the **Back** `link_to` path parameter from a global `todo_items_path` (that no longer exists) to reference the `TodoList` it is a member of. This new method requires the `@todo_list` passed in as a single argument.
 
-• we want to invoke todo_items#new when we create a new TodoItem
+      **from**: `<%= link_to 'Back', todo_items_path %>`
 
-• that action is mapped to using the /todo_lists/:todo_list_id/todo_items/new(.:format) URI and
+      **to**: `<%= link_to 'Back', @todo_list %>`
 
-GET method. We are required to supply a :todo_list_id
+  c. Update the form parameters on the `TodoItems` form partial page (`todo_items/_form.html.erb`) to include the `TodoList` that the `TodoItem` is a member of.
+    - Change the `link_to` parameters from global `todo_item` references to provide fully qualified `[@todo_list, @todo_item]` references as an `array`.
 
-• new_todo_list_todo_item_path is formed by adding _path to new_todo_list_todo_item
+      **from**: `<%= form_for(@todo_item) do |f| %>`
 
-• the :todo_list_id is filled in by passing in a @todo_list when calling it
+      **to**: `<%= form_for([@todo_list, @todo_item]) do |f| %>`
 
-• GET is provided by new_todo_list_todo_item_path
+    ```
+    $ rspec spec/nested_resources_spec.rb -e rq07c
+    ```
 
-Notice that the TodoItems now display on the todo_list#show page by navigating to a specific TodoList.
+  d. Update the links on the `todo_items#new` page (`todo_items/new.html.erb`) to include the `TodoList`.
+    - Change the **Back** `link_to` path parameter from a global `todo_items_path` (that no longer exists) to reference the `TodoList` it is a member of. This new method requires the `@todo_list` passed in as a single argument.
 
-However, the TodoItem URIs are not yet implemented in the TodoItem controller (next step).
+      **from**: `<%= link_to 'Back', todo_items_path %>`
 
-$ rspec spec/nested_resources_spec.rb -e rq05
+      **to**: `<%= link_to 'Back', @todo_list %>`
 
-6. Modify the TodoItem controller to work as a nested resource by implementing the following. Note that your
+    ```
+    $ rspec spec/nested_resources_spec.rb -e rq07d
+    ```
 
-views with TodoItem URI references will not work until these changes are made and the links and forms are
+  e. Make the display of `completed` conditional on the `TodoItem` being *edited*, not when it is being *created*. Users should not be allowed to see/change the completed property for a new `TodoItem`. 
+    (Hint: edited objects are persisted and can be tested using `.persisted?`. Objects can also be tested with `.new_record?`)
 
-updated to include the scoping TodoList for each referenced TodoItem. The unit tests, however, will be able to
+    ```
+    $ rspec spec/nested_resources_spec.rb -e rq07e
+    ```
 
-make calls into your back-end to determine all URIs are implemented properly – prior to moving on to the views.
-
-a. Remove the old URI comments or replace them to have the following form since all calls to a TodoItem will
-
-now be scoped below a TodoList. Use the todo_item output of rake routes to give you a head start.
-
-$ rake routes
-
-#METHOD /todo_list/:todo_list_id/todo_items
-
-#METHOD /todo_list/:todo_list_id/todo_items/:id
-
-b. Remove the todo_item#index method and views/todo_items/index pages. This will no longer be called
-
-since all TodoItem displays will be scoped to a particular TodoList. We will get the TodoList and call
-
-todo_list.todo_items() instead.
-
-c. Add a private helper method called set_todo_list that sets the @todo_list instance variable from the
-
-:todo_list_id property passed in via the params. (Hint: try the following in the rails console if you
-
-need practice locating a TodoList by id)
-
-$ rails c
-
-> list_id=TodoList.first.id
-
-> @todo_list=TodoList.find(list_id)
-
-d. Update the private helper method called set_todo_item to scope its find command to the todo_items of
-
-a specific @todo_list list. (Hint: try the following in the rails console if you need practice locating a
-
-TodoItem by id scoped to a TodoList)
-
-$ rails c
-
-> list_id=TodoList.first.id
-
-> @todo_list=TodoList.find(list_id)
-
-> item_id=@todo_list.todo_items.first.id
-
-> @todo_item=@todo_list.todo_items.find(item_id)
-
-e. Invoke the set_todo_list method before each method in the controller is executed using a before_action
-
-f. Update the todo_item#new action to return a new TodoItem instance that is initialized to reference its
-
-parent @todo_list, which is provided by set_todo_list.
-
-(Hint: try the following the rails console if you need practice creating a new instance of a TodoItem
-
-associated with a TodoList. Notice the new TodoItem is never saved to the database during this call.
-
-However, what is passed back to the form is a TodoItem prototype that has its foreign key reference set
-
-to the TodoList so that TodoList can be referenced when the TodoItem is finally created in a follow-on
-
-POST)
-
-$ rails c
-
-> @todo_list=TodoList.first
-
-> @todo_item=@todo_list.todo_items.new
-
-g. Update the todo_item#create to create a new TodoItem instance based on the todo_item_params as
-
-before. Except now create this instance associated with the @todo_list provided by set_todo_list. (Hint:
-
-try the following in the rails console if you need practice creating a new instance of a TodoItem associated
-
-with a TodoList. Notice that in this case – save() is being called on the todo_list, causing the new
-
-TodoItem to be inserted into the database.)
-
-$ rails c
-
-> @todo_list=TodoList.first
-
-> @todo_item=@todo_list.todo_items.new(title:"my item")
-
-> @todo_list.save()
-
-h. Update the HTML redirect of the todo_item#create, todo_item#update, and todo_item#destroy meth-
-ods to do to the todo_list#index page. (Hint: use the @todo_list variable within redirect_to to express
-
-the todo_list#index page URI)
-
-7. Update TodoList and TodoItem views to adjust the links and forms in these views to work with the updated
-
-URIs and TodoItem controller.
-
-a. Update the links on the todo_items#show page (todo_items/show.html.erb) to include the TodoList the
-
-TodoItem is a member of.
-
-• Change the Edit link_to path parameter from the global edit_todo_item_path (that no longer exists) to
-
-the new edit_todo_list_todo_item_path. This new method requires both @todo_list and ‘todo_item’
-
-passed in as separate arguments (not as an array – as in previous requirement).
-
-from: <%= link_to 'Edit', edit_todo_item_path(@todo_item) %> |
-
-to: <%= link_to 'Edit', edit_todo_list_todo_item_path(@todo_list, @todo_item) %> |
-
-• Change the Back link_to path parameter from to global edit_items_path (that no longer exists) to the
-
-todo_listi#show page it is a member of. This requires using the @todo_list.
-
-from: <%= link_to 'Back', todo_items_path %>
-
-to: <%= link_to 'Back', @todo_list %>
-
-$ rspec spec/nested_resources_spec.rb -e rq07a
-
-b. Update the links on the todo_items#edit page (todo_items/edit.html.erb) to include the TodoList the
-
-TodoItem is a member of.
-
-• Change the Show link_to path parameter from a global @todo_item reference to include its @todo_list.
-
-This requires using both @todo_list and ‘@todo_item’ passed in as separate arguments as an array.
-
-from: <%= link_to 'Show', @todo_item %> |
-
-to: <%= link_to 'Show', [@todo_list, @todo_item] %> |
-
-• Change the Back link_to path parameter from a global todo_items_path (that no longer exists) to reference
-
-the TodoList it is a member of. This new method requires the @todo_list passed in as a single argument.
-
-from: <%= link_to 'Back', todo_items_path %>
-
-to: <%= link_to 'Back', @todo_list %>
-
-c. Update the form parameters on the TodoItems form partial page (todo_items/_form.html.erb) to include
-
-the TodoList the TodoItem is a member of.
-
-• Change the link_to parameters from global todo_item references to provide fully qualified ‘[@todo_list,
-
-@todo_item]’ references as an array.
-
-from: <%= form_for(@todo_item) do |f| %>
-
-to: <%= form_for([@todo_list, @todo_item]) do |f| %>
-
-$ rspec spec/nested_resources_spec.rb -e rq07c
-
-d. Update the links on the todo_items#new page (todo_items/new.html.erb) to include the TodoList.
-
-• change the Back link_to path parameter from a global todo_items_path (that no longer exists) to reference
-
-the TodoList it is a member of. This new method requires the @todo_list passed in as a single argument.
-
-from: <%= link_to 'Back', todo_items_path %>
-
-to: <%= link_to 'Back', @todo_list %>
-
-$ rspec spec/nested_resources_spec.rb -e rq07d
-
-e. Make the display of completed conditional on the todo_item being edited versus new. Users should not be
-
-allowed to see/change the completed property for a new TodoItem. (Hint: edited objects are persisted and
-
-can be tested using persisted?. Objects can also be tested with .new_record?)
-
-$ rspec spec/nested_resources_spec.rb -e rq07e
-
-$ rspec spec/nested_resources_spec.rb -e rq07
+    ```
+    $ rspec spec/nested_resources_spec.rb -e rq07
+    ```
 
 8. Verify that you have implemented a password login capability for the User model. You implemented this in an
 
