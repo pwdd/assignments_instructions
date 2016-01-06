@@ -196,7 +196,7 @@ For this assignment, it is important that you follow the order of the tests sugg
 
   If you have not yet done so, please start a new instance of the console (you will have two 'tabs' of the console open), start the server and also take a look at your defined URI routes.
 
-  ** For Windows 64 bit users**: There is an incompatibility between CoffeeScript and 64 bit Windows machines. So, if you start Rails server, navigate to root (`http://localhost:3000`) and see the error `TypeError: Object doesn't support this property or method`, you will need to install NodeJS. Please visit https://nodejs.org/en/download/ and find the installler that best fit your computer system.
+  **For Windows 64 bit users**: If you start Rails server, navigate to root (`http://localhost:3000`) and see the error `TypeError: Object doesn't support this property or method`, you will need to install NodeJS. Please visit https://nodejs.org/en/download/ and find the installler that best fit your computer system. This happens because of an incompatibility between recent CoffeeScript gem and Windows.
 
   ```
   #in separate console
