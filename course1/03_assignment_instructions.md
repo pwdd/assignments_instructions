@@ -188,7 +188,7 @@ Submit a `.zip` archive (other archive forms not currently supported) with your 
 
 The grader will replace the `spec` files with fresh copies and will perform a test with different query terms.
 
-`` 
+```
 |-- app
 |   |-- assets
 |   |-- controllers
@@ -209,5 +209,6 @@ The grader will replace the `spec` files with fresh copies and will perform a te
 |-- README.rdoc
 |-- test
 `-- vendor
+```
 
 **Last update: 2016-01-31**
